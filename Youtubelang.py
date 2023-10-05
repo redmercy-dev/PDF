@@ -68,8 +68,8 @@ def extract_content_from_url(url: str):
 
 
 # 3. Extract structured info from text via LLM
-def extract_structured_data(content: str, data_points):
-    llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613")
+def extract_structured_data(content: str, data_points, openai_key):
+    llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613", openai_api_key=openai_key)
     template = """
     You are an expert admin people who will extract core information from documents
 
@@ -107,6 +107,9 @@ def main():
     st.set_page_config(page_title="Doc extraction", page_icon=":bird:")
 
     st.header("Doc extraction :bird:")
+    # Capture the OpenAI key from the user
+    openai_key = st.text_input("Enter your OpenAI API key:", type="password")
+    # The type="password" argument obscures the entered text for privacy.
 
     data_points = st.text_area(
         "Data points", value=default_data_points, height=170)
@@ -122,7 +125,7 @@ def main():
                 f.write(file.getbuffer())
                 content = extract_content_from_url(f.name)
                 print(content)
-                data = extract_structured_data(content, data_points)
+                data = extract_structured_data(content, data_points,openai_key)
                 json_data = json.loads(data)
                 if isinstance(json_data, list):
                     results.extend(json_data)  # Use extend() for lists
