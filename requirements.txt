@@ -6,3 +6,5 @@ pypdfium2
 oauth2client
 openai
 tesseract 
+packaging
+
