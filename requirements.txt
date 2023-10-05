@@ -1,7 +1,5 @@
 streamlit
-langchain.chat_models
-langchain.prompts
-langchain.chains
+langchain
 dotenv
 pytesseract
 Pillow
