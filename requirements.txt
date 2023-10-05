@@ -3,10 +3,8 @@ langchain
 pytesseract
 Pillow
 pypdfium2
-multiprocessing
 pandas
 json
 requests
-gspread
 oauth2client
 openai
