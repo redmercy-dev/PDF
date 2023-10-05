@@ -3,8 +3,5 @@ langchain
 pytesseract
 Pillow
 pypdfium2
-pandas
-json
-requests
 oauth2client
 openai
