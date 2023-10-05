@@ -1,6 +1,6 @@
 streamlit
 langchain
-pytesseract
+pytesseract==0.3.10
 Pillow
 pypdfium2
 oauth2client
