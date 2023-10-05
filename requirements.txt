@@ -7,4 +7,5 @@ oauth2client
 openai
 tesseract 
 packaging
-
+tesseract-ocr 
+libtesseract-dev
