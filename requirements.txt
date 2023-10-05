@@ -1,0 +1,14 @@
+streamlit
+langchain.chat_models
+langchain.prompts
+langchain.chains
+dotenv
+pytesseract
+Pillow
+pypdfium2
+multiprocessing
+pandas
+json
+requests
+gspread
+oauth2client
