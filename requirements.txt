@@ -12,3 +12,4 @@ json
 requests
 gspread
 oauth2client
+openai
