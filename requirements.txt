@@ -8,4 +8,3 @@ openai
 tesseract 
 packaging
 tesseract-ocr 
-libtesseract-dev
