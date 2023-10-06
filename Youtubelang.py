@@ -18,12 +18,8 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 def authenticate_google_sheets():
-    creds = None
+    creds = st.session_state.get("creds", None)
 
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -41,10 +37,11 @@ def authenticate_google_sheets():
                 flow.fetch_token(code=auth_code)
                 creds = flow.credentials
                 
-                # Saving the credentials for the next run
-                with open('token.pickle', 'wb') as token:
-                    pickle.dump(creds, token)
+                # Saving the credentials in session state
+                st.session_state.creds = creds
+
     return creds
+
 
 
 
