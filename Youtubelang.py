@@ -166,7 +166,8 @@ def main():
 
                 # Allow the user to save the results to Google Sheets
                 if st.button("Save to Google Sheets"):
-                    sheet_url = st.secrets["private_gsheets_url"]
+                    # Direct Google Sheets link
+                    sheet_url = "https://docs.google.com/spreadsheets/d/1mpIZ2_4EzQ5-cAabEJifdjh5EgcGD_UH8PlJsQlxkMc/edit"
                     append_to_sheet(df, sheet_url)
                     st.success('Data has been written to Google Sheets')
             except Exception as e:
