@@ -122,44 +122,43 @@ def extract_structured_data(content: str, data_points, openai_key):
     return results
 
 
-# 5. Streamlit app
 def main():
-    default_data_points = """{
-        "invoice_item": "what is the item that charged",
-        "Amount": "how much does the invoice item cost in total",
-        "Company_name": "company that issued the invoice",
-        "invoice_date": "when was the invoice issued",
-    }"""
+    default_data_points = {
+        "invoice_item": "What is the item that was charged?",
+        "Amount": "How much does the invoice item cost in total?",
+        "Company_name": "Which company issued the invoice?",
+        "invoice_date": "When was the invoice issued?"
+    }
 
     st.set_page_config(page_title="Doc extraction", page_icon=":bird:")
 
     st.header("Doc extraction :bird:")
+    
     # Capture the OpenAI key from the user
     openai_key = st.text_input("Enter your OpenAI API key:", type="password")
-    # The type="password" argument obscures the entered text for privacy.
-
+    
     data_points = st.text_area(
-        "Data points", value=default_data_points, height=170)
+        "Data points", value=json.dumps(default_data_points, indent=4), height=170)
 
-    uploaded_files = st.file_uploader(
-        "upload PDFs", accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Upload PDFs", accept_multiple_files=True)
 
-    if uploaded_files is not None and data_points is not None:
+    if uploaded_files and data_points:
         results = []
+        
         for file in uploaded_files:
             with NamedTemporaryFile(dir='.', suffix='.pdf', delete=False) as f:
-
                 f.write(file.getbuffer())
                 content = extract_content_from_url(f.name)
-                print(content)
-                data = extract_structured_data(content, data_points,openai_key)
+                
+                data = extract_structured_data(content, data_points, openai_key)
                 json_data = json.loads(data)
+                
                 if isinstance(json_data, list):
                     results.extend(json_data)  # Use extend() for lists
                 else:
                     results.append(json_data)  # Wrap the dict in a list
 
-         if len(results) > 0:
+        if results:
             try:
                 df = pd.DataFrame(results)
                 st.subheader("Results")
@@ -170,7 +169,6 @@ def main():
                     sheet_url = st.secrets["private_gsheets_url"]
                     append_to_sheet(df, sheet_url)
                     st.success('Data has been written to Google Sheets')
-                  
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 
