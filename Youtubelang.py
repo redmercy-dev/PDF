@@ -10,7 +10,53 @@ import multiprocessing
 from tempfile import NamedTemporaryFile
 import pandas as pd
 import json
-import requests
+import pickle
+import os.path
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+
+def authenticate_google_sheets():
+    creds = None
+
+    if os.path.exists('token.pickle'):
+        with open('token.pickle', 'rb') as token:
+            creds = pickle.load(token)
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'auth.json', ['https://www.googleapis.com/auth/spreadsheets'])
+            creds = flow.run_local_server(port=0)
+        with open('token.pickle', 'wb') as token:
+            pickle.dump(creds, token)
+    return creds
+
+
+from googleapiclient.discovery import build
+
+def append_to_sheet(data_frame, sheet_id):
+    creds = authenticate_google_sheets()
+    service = build('sheets', 'v4', credentials=creds)
+    sheet = service.spreadsheets()
+
+    # Convert the DataFrame to a list of lists for Google Sheets
+    values = data_frame.values.tolist()
+    values.insert(0, data_frame.columns.tolist())  # Adding headers
+
+    body = {
+        'values': values
+    }
+
+    # Append the data
+    result = sheet.values().append(
+        spreadsheetId=sheet_id,
+        range="A1",
+        valueInputOption="RAW",
+        insertDataOption="INSERT_ROWS",
+        body=body
+    ).execute()
+
 
 
 # 1. Convert PDF file into images via pypdfium2
@@ -135,10 +181,15 @@ def main():
                 st.subheader("Results")
                 st.data_editor(df)
 
+                # Append data to Google Sheets
+                sheet_id = '1mpIZ2_4EzQ5-cAabEJifdjh5EgcGD_UH8PlJsQlxkMc' # Replace with your Google Sheet ID
+                append_to_sheet(df, sheet_id)
+                st.success("Data successfully written to Google Sheets!")
+
             except Exception as e:
                 st.error(
-                    f"An error occurred while creating the DataFrame: {e}")
-                st.write(results)  # Print the data to see its content
+                    f"An error occurred: {e}")
+                st.write(results)
 
 
 if __name__ == '__main__':
