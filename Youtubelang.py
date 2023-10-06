@@ -193,12 +193,7 @@ def main():
                 st.subheader("Results")
                 st.data_editor(df)
         
-                # Add a button to save the results to Google Sheets
-                if st.button("Save to Google Sheets"):
-                    # Append data to Google Sheets
-                    sheet_id = '1mpIZ2_4EzQ5-cAabEJifdjh5EgcGD_UH8PlJsQlxkMc' # Replace with your Google Sheet ID
-                    append_to_sheet(df, sheet_id)
-                    st.success("Data successfully written to Google Sheets!")
+              
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 
