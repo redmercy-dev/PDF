@@ -15,22 +15,37 @@ import os.path
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
+from google_auth_oauthlib.flow import InstalledAppFlow
+
 def authenticate_google_sheets():
     creds = None
 
     if os.path.exists('token.pickle'):
         with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
+    
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'auth.json', ['https://www.googleapis.com/auth/spreadsheets'])
-            creds = flow.run_local_server(port=0)
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
+                'credentials.json', ['https://www.googleapis.com/auth/spreadsheets'])
+            
+            # Use this for Streamlit since we can't pop up a browser from the server
+            auth_url, _ = flow.authorization_url(prompt='consent')
+            st.write(f"Click on the link below to authenticate:")
+            st.write(f"[Authenticate with Google]({auth_url})")
+            
+            auth_code = st.text_input("Enter the authentication code you received:")
+            if auth_code:
+                flow.fetch_token(code=auth_code)
+                creds = flow.credentials
+                
+                # Saving the credentials for the next run
+                with open('token.pickle', 'wb') as token:
+                    pickle.dump(creds, token)
     return creds
+
 
 
 from googleapiclient.discovery import build
@@ -180,16 +195,18 @@ def main():
                 df = pd.DataFrame(results)
                 st.subheader("Results")
                 st.data_editor(df)
-
-                # Append data to Google Sheets
-                sheet_id = '1mpIZ2_4EzQ5-cAabEJifdjh5EgcGD_UH8PlJsQlxkMc' # Replace with your Google Sheet ID
-                append_to_sheet(df, sheet_id)
-                st.success("Data successfully written to Google Sheets!")
-
+        
+                # Add a button to save the results to Google Sheets
+                if st.button("Save to Google Sheets"):
+                    # Append data to Google Sheets
+                    sheet_id = '1mpIZ2_4EzQ5-cAabEJifdjh5EgcGD_UH8PlJsQlxkMc' # Replace with your Google Sheet ID
+                    append_to_sheet(df, sheet_id)
+                    st.success("Data successfully written to Google Sheets!")
             except Exception as e:
-                st.error(
-                    f"An error occurred: {e}")
-                st.write(results)
+                st.error(f"An error occurred: {e}")
+
+
+          
 
 
 if __name__ == '__main__':
