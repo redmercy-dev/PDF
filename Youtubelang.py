@@ -29,7 +29,7 @@ def authenticate_google_sheets():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', ['https://www.googleapis.com/auth/spreadsheets'])
+                'auth.json', ['https://www.googleapis.com/auth/spreadsheets'])
             
             # Use this for Streamlit since we can't pop up a browser from the server
             auth_url, _ = flow.authorization_url(prompt='consent')
