@@ -17,57 +17,29 @@ from google.auth.transport.requests import Request
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 
+import gspread
+from google.oauth2 import service_account
+
+
+
+# Authentication function for Google Sheets
 def authenticate_google_sheets():
-    creds = st.session_state.get("creds", None)
+    credentials = service_account.Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=[
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive"
+        ],
+    )
+    client = gspread.authorize(credentials)
+    return client
 
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'auth.json', ['https://www.googleapis.com/auth/spreadsheets'])
-            
-            # Use this for Streamlit since we can't pop up a browser from the server
-            auth_url, _ = flow.authorization_url(prompt='consent')
-            st.write(f"Click on the link below to authenticate:")
-            st.write(f"[Authenticate with Google]({auth_url})")
-            
-            auth_code = st.text_input("Enter the authentication code you received:")
-            if auth_code:
-                flow.fetch_token(code=auth_code)
-                creds = flow.credentials
-                
-                # Saving the credentials in session state
-                st.session_state.creds = creds
-
-    return creds
-
-
-
-
-from googleapiclient.discovery import build
-
-def append_to_sheet(data_frame, sheet_id):
-    creds = authenticate_google_sheets()
-    service = build('sheets', 'v4', credentials=creds)
-    sheet = service.spreadsheets()
-
-    # Convert the DataFrame to a list of lists for Google Sheets
-    values = data_frame.values.tolist()
-    values.insert(0, data_frame.columns.tolist())  # Adding headers
-
-    body = {
-        'values': values
-    }
-
-    # Append the data
-    result = sheet.values().append(
-        spreadsheetId=sheet_id,
-        range="A1",
-        valueInputOption="RAW",
-        insertDataOption="INSERT_ROWS",
-        body=body
-    ).execute()
+# Function to append DataFrame to Google Sheets
+def append_to_sheet(data_frame, sheet_url):
+    client = authenticate_google_sheets()
+    sheet = client.open_by_url(sheet_url).sheet1
+    sheet.clear()  # Clear the sheet before adding new data
+    sheet.update([data_frame.columns.values.tolist()] + data_frame.values.tolist())
 
 
 
@@ -187,13 +159,18 @@ def main():
                 else:
                     results.append(json_data)  # Wrap the dict in a list
 
-        if len(results) > 0:
+         if len(results) > 0:
             try:
                 df = pd.DataFrame(results)
                 st.subheader("Results")
-                st.data_editor(df)
-        
-              
+                st.dataframe(df)  # Display the dataframe
+                
+                # Allow the user to save the results to Google Sheets
+                if st.button("Save to Google Sheets"):
+                    sheet_url = st.secrets["private_gsheets_url"]
+                    append_to_sheet(df, sheet_url)
+                    st.success('Data has been written to Google Sheets')
+                  
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 
