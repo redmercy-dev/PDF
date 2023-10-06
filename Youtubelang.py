@@ -133,10 +133,10 @@ def main():
     st.set_page_config(page_title="Doc extraction", page_icon=":bird:")
 
     st.header("Doc extraction :bird:")
-    
+
     # Capture the OpenAI key from the user
     openai_key = st.text_input("Enter your OpenAI API key:", type="password")
-    
+
     data_points = st.text_area(
         "Data points", value=json.dumps(default_data_points, indent=4), height=170)
 
@@ -144,15 +144,15 @@ def main():
 
     if uploaded_files and data_points:
         results = []
-        
+
         for file in uploaded_files:
             with NamedTemporaryFile(dir='.', suffix='.pdf', delete=False) as f:
                 f.write(file.getbuffer())
                 content = extract_content_from_url(f.name)
-                
+
                 data = extract_structured_data(content, data_points, openai_key)
                 json_data = json.loads(data)
-                
+
                 if isinstance(json_data, list):
                     results.extend(json_data)  # Use extend() for lists
                 else:
@@ -163,7 +163,7 @@ def main():
                 df = pd.DataFrame(results)
                 st.subheader("Results")
                 st.dataframe(df)  # Display the dataframe
-                
+
                 # Allow the user to save the results to Google Sheets
                 if st.button("Save to Google Sheets"):
                     sheet_url = st.secrets["private_gsheets_url"]
