@@ -1,7 +1,8 @@
-Introduction
+
 This project provides a utility for extracting content from PDF documents, processing the content, and then exporting the extracted information to Google Sheets. It uses various libraries including pytesseract for image-to-text conversion, pypdfium2 for PDF to image conversion, and googleapiclient for Google Sheets integration. Additionally, it incorporates the power of OpenAI's GPT model for extracting structured data from content.
 
 Features
+
 Convert PDF documents into images.
 Extract text from these images.
 Utilize OpenAI's GPT model to extract structured data from text content.
