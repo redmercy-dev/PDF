@@ -38,8 +38,14 @@ def authenticate_google_sheets():
 def append_to_sheet(data_frame, sheet_url):
     client = authenticate_google_sheets()
     sheet = client.open_by_url(sheet_url).sheet1
-    sheet.clear()  # Clear the sheet before adding new data
-    sheet.update([data_frame.columns.values.tolist()] + data_frame.values.tolist())
+    
+    # Find the next empty row
+    last_row = len(sheet.get_all_values())
+    
+    # Append DataFrame to Google Sheets
+    for index, row in data_frame.iterrows():
+        sheet.insert_row(row.tolist(), last_row + index + 1)
+
 
 
 
